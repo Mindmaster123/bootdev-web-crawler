@@ -1,5 +1,6 @@
 from urllib.parse import urlsplit, urljoin
 from bs4 import BeautifulSoup
+import requests
 
 def normalize_url(url):
     url = urlsplit(url)
@@ -46,3 +47,32 @@ def extract_page_data(html, page_url):
     dicta["outgoing_links"] = get_urls_from_html(html, page_url)
     dicta["image_urls"] = get_images_from_html(html, page_url)
     return dicta
+
+def get_html(url):
+    r = requests.get(url, headers={"User-Agent": "BootCrawler/1.0"})
+    if r.status_code >= 400:
+        raise Exception(f"Error with url: {url}")
+    if "text/html" not in r.headers.get("Content-Type", ""):
+        raise Exception(f"found no text/html on: {url}")
+    return r.text
+
+def crawl_page(base_url, current_url=None, page_data=None):
+    if page_data is None: page_data = {}
+    if current_url is None: current_url = base_url
+    url1, url2 = urlsplit(base_url), urlsplit(current_url)
+    if url1.netloc != url2.netloc:
+        return
+    normalized_url = normalize_url(current_url)
+    if normalized_url in page_data:
+        return
+    print(current_url)
+    page_data[normalized_url] = None
+    try:
+        html = get_html(current_url)
+    except Exception:
+        return
+    page_data[normalized_url] = extract_page_data(html, current_url)
+    loop = get_urls_from_html(html, base_url)
+    for url in loop:
+        crawl_page(base_url, url, page_data)
+    return page_data

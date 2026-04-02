@@ -12,11 +12,10 @@ async def main_async():
         print(f"starting crawl of: {sys.argv[1]}")
     #craw = crawl_page(sys.argv[1])
     craw = await crawl_site_async(sys.argv[1])
-    for c in craw.values():
-        if c is None: continue
-        print(c["url"])
+    #for c in craw.values():
+     #   if c is None: continue
+      #  print(c["url"])
     print(len(craw))
-    #When iterating over the page data, use page_data.values() to get the page dictionaries if i feel like doing that its here
 
 
 

@@ -83,7 +83,7 @@ class AsyncCrawler:
         self.base_domain = urlparse(base_url).netloc
         self.page_data = {}
         self.lock = asyncio.Lock()
-        self.max_concurrency = 1
+        self.max_concurrency = 10
         self.semaphore = asyncio.Semaphore(self.max_concurrency)
 
     async def __aenter__(self):
@@ -103,7 +103,7 @@ class AsyncCrawler:
     async def get_html_async(self, url):
         async with self.session.get(url) as r:
             if r.status >= 400:
-                raise Exception(f"Error with url: {url}")
+                return
             if "text/html" not in r.headers.get("Content-Type", ""):
                     return
             return await r.text()
@@ -113,6 +113,7 @@ class AsyncCrawler:
         normalized = normalize_url(current_url)
         is_new = await self.add_page_visit(normalized)
         if not is_new: return
+        print(f"crawling {current_url}")
         tasks = []
         async with self.semaphore:
             html = await self.get_html_async(current_url)
@@ -120,9 +121,9 @@ class AsyncCrawler:
             extracted = extract_page_data(html, current_url)
             async with self.lock:
                 self.page_data[normalized] = extracted
-            urls = get_urls_from_html(html, self.base_url)
-            for url in urls:
-                tasks.append(asyncio.create_task(self.crawl_page_async(url)))
+        urls = get_urls_from_html(html, self.base_url)
+        for url in urls:
+            tasks.append(asyncio.create_task(self.crawl_page_async(url)))
         await asyncio.gather(*tasks)
 
     async def crawl(self):

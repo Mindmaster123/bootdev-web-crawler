@@ -88,7 +88,6 @@ class AsyncCrawler:
         self.max_pages = max_pages
         self.should_stop = False
         self.all_tasks = set()
-        self.visited_urls = set()
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
@@ -99,7 +98,7 @@ class AsyncCrawler:
 
     async def add_page_visit(self, normalized_url):
         async with self.lock:
-            if normalized_url in self.visited_urls:
+            if normalized_url in self.page_data:
                 return False
             if self.should_stop:
                 return False
@@ -109,7 +108,7 @@ class AsyncCrawler:
                 for task in self.all_tasks:
                     task.cancel()
                 return False
-            self.visited_urls.add(normalized_url)
+            self.page_data[normalized_url] = None
             return True
 
     async def get_html_async(self, url):

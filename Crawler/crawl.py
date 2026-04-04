@@ -1,6 +1,6 @@
 from urllib.parse import urlsplit, urljoin, urlparse
 from bs4 import BeautifulSoup
-import requests, asyncio, aiohttp, sys
+import requests, asyncio, aiohttp
 
 def normalize_url(url):
     url = urlsplit(url)
@@ -78,14 +78,14 @@ def crawl_page(base_url, current_url=None, page_data=None):
     return page_data
 
 class AsyncCrawler:
-    def __init__(self, base_url):
+    def __init__(self, base_url, max_concurrency, max_pages):
         self.base_url = base_url
         self.base_domain = urlparse(base_url).netloc
         self.page_data = {}
         self.lock = asyncio.Lock()
-        self.max_concurrency = int(sys.argv[2])
+        self.max_concurrency = max_concurrency
         self.semaphore = asyncio.Semaphore(self.max_concurrency)
-        self.max_pages = int(sys.argv[3])
+        self.max_pages = max_pages
         self.should_stop = False
         self.all_tasks = set()
 
@@ -148,6 +148,6 @@ class AsyncCrawler:
         await self.crawl_page_async(self.base_url)
         return self.page_data
 
-async def crawl_site_async(base_url):
-    async with AsyncCrawler(base_url) as crawler:
+async def crawl_site_async(base_url, max_concurrency, max_pages):
+    async with AsyncCrawler(base_url, max_concurrency, max_pages) as crawler:
         return await crawler.crawl()

@@ -11,10 +11,12 @@ async def main_async():
     if len(sys.argv) == 2:
         print(f"starting crawl of: {sys.argv[1]}")
     #craw = crawl_page(sys.argv[1])
-    craw = await crawl_site_async(sys.argv[1])
-    #for page in craw.values():
-     #   if page is None: continue
-      #  print(page["url"])
+    max_concurrency = int(sys.argv[2])
+    max_pages = int(sys.argv[3])
+    craw = await crawl_site_async(sys.argv[1], max_concurrency, max_pages)
+    for page in craw.values():
+        if page is None: continue
+        print(page["url"])
     print(len(craw))
 
 

@@ -14,8 +14,9 @@ async def main_async():
     max_concurrency = int(sys.argv[2])
     max_pages = int(sys.argv[3])
     craw = await crawl_site_async(sys.argv[1], max_concurrency, max_pages)
-    #for page in craw.values():
-     #   print(page["url"]
+    for page in craw.values(): #this shit is broken cause page is none well its not broken if u don't limit pages so something fucky example if site has 32 links and u limit it to 32 it works fine but limit it to 31 and u get 2 of the 31 links in this test case
+        if page is None: continue
+        print(page["url"])
     print(len(craw))
 
 

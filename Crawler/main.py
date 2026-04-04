@@ -14,9 +14,8 @@ async def main_async():
     max_concurrency = int(sys.argv[2])
     max_pages = int(sys.argv[3])
     craw = await crawl_site_async(sys.argv[1], max_concurrency, max_pages)
-    for page in craw.values():
-        if page is None: continue
-        print(page["url"])
+    #for page in craw.values():
+     #   print(page["url"]
     print(len(craw))
 
 

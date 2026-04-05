@@ -1,5 +1,6 @@
 import sys, asyncio
 from crawl import crawl_site_async
+from json_report import write_json_report
 
 async def main_async():
     if len(sys.argv) < 4:
@@ -19,7 +20,7 @@ async def main_async():
       #  print(page["url"] if page else "pending") # this makes it say pending instead of nothing wish is bad? good?
     print(len(craw))
     #could not all this be done inside crawl.py ?_?
-
+    write_json_report(craw)
 
     #for page in craw.values():
      #   if page: print(page["url"])

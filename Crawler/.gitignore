@@ -2,3 +2,9 @@
 __pycache__/
 *.pyc
 report.json
+bin/
+lib/
+lib64/
+pyvenv.cfg
+include/
+.idea/

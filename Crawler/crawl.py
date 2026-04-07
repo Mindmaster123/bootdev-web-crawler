@@ -1,6 +1,6 @@
 from urllib.parse import urlsplit, urljoin, urlparse
 from bs4 import BeautifulSoup
-import requests, asyncio, aiohttp
+import asyncio, aiohttp
 
 def normalize_url(url):
     url = urlsplit(url)
@@ -20,7 +20,7 @@ def get_first_paragraph_from_html(html):
     if soup.main is not None:
         if soup.main.p is not None:
             return soup.main.p.get_text()
-    if soup.p == None:
+    if soup.p is None:
         return ""
     return soup.p.get_text()
 
@@ -40,42 +40,13 @@ def get_images_from_html(html, base_url):
     return lista
 
 def extract_page_data(html, page_url):
-    dicta = dict() #example dicta["age"] = 31
+    dicta = dict()
     dicta["url"] = page_url
     dicta["heading"] = get_heading_from_html(html)
     dicta["first_paragraph"] = get_first_paragraph_from_html(html)
     dicta["outgoing_links"] = get_urls_from_html(html, page_url)
     dicta["image_urls"] = get_images_from_html(html, page_url)
     return dicta
-
-def get_html(url):
-    r = requests.get(url, headers={"User-Agent": "BootCrawler/1.0"})
-    if r.status_code >= 400:
-        raise Exception(f"Error with url: {url}")
-    if "text/html" not in r.headers.get("Content-Type", ""):
-        raise Exception(f"found no text/html on: {url}")
-    return r.text
-
-def crawl_page(base_url, current_url=None, page_data=None):
-    if page_data is None: page_data = {}
-    if current_url is None: current_url = base_url
-    url1, url2 = urlsplit(base_url), urlsplit(current_url)
-    if url1.netloc != url2.netloc:
-        return
-    normalized_url = normalize_url(current_url)
-    if normalized_url in page_data:
-        return
-    print(current_url)
-    page_data[normalized_url] = None
-    try:
-        html = get_html(current_url)
-    except Exception:
-        return
-    page_data[normalized_url] = extract_page_data(html, current_url)
-    loop = get_urls_from_html(html, base_url)
-    for url in loop:
-        crawl_page(base_url, url, page_data)
-    return page_data
 
 class AsyncCrawler:
     def __init__(self, base_url, max_concurrency, max_pages):
@@ -114,9 +85,9 @@ class AsyncCrawler:
     async def get_html_async(self, url):
         async with self.session.get(url) as r:
             if r.status >= 400:
-                return
+                return None
             if "text/html" not in r.headers.get("Content-Type", ""):
-                return
+                return None
             return await r.text()
 
     async def crawl_page_async(self, current_url):
